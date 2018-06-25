@@ -74,7 +74,7 @@ int main(const int argc, const char** argv) {
         }
 
         if (iter % nStepsForReport == 0) {
-            float px = 0f, py = 0f, pz = 0f;
+            float px = 0, py = 0, pz = 0;
             for (int i = 0 ; i < N; i++) {
                 Particle *p = particles + i;
                 px += p->vx;
