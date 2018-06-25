@@ -6,16 +6,16 @@
 #define BLOCK_SIZE 256
 #define SOFTENING 1e-3f
 
-typedef struct { float x, y, z, vx, vy, vz; } Particle;
+typedef struct { double x, y, z, vx, vy, vz; } Particle;
 
 __global__
-void calcForces(Particle *p, float dt, int N) {
+void calcForces(Particle *p, double dt, int N) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     if (i < N) {
-        float Fx = 0.0f, Fy = 0.0f, Fz = 0.0f;
+        double Fx = 0.0f, Fy = 0.0f, Fz = 0.0f;
 
         for (int j = 0; j < N; j++) {
-            const float
+            const double
                 dx = p[j].x - p[i].x,
                 dy = p[j].y - p[i].y,
                 dz = p[j].z - p[i].z,
@@ -44,7 +44,7 @@ int main(const int argc, const char** argv) {
         nStepsForReport = 10,
         nBlocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-    const float
+    const double
         dt = 0.001f,
         init_dist = 1.0;
 
@@ -54,7 +54,7 @@ int main(const int argc, const char** argv) {
     for (int i = 0; i < Ns; i++)
     for (int j = 0; j < Ns; j++)
     for (int k = 0; k < Ns; k++)  {
-        const float init_shift = init_dist * (Ns - 1) / 2;
+        const double init_shift = init_dist * (Ns - 1) / 2;
         Particle *p = particles + i;
         p->x = i * init_dist - init_shift;
         p->y = j * init_dist - init_shift;
@@ -81,18 +81,18 @@ int main(const int argc, const char** argv) {
         }
 
         if (iter % nStepsForReport == 0) {
-            float px = 0, py = 0, pz = 0;
+            double px = 0, py = 0, pz = 0;
             for (int i = 0 ; i < N; i++) {
                 Particle *p = particles + i;
                 px += p->vx;
                 py += p->vy;
                 pz += p->vz;
             }
-            printf("p %f %f %f\n", px, py, pz);
+            printf("p %lf %lf %lf\n", px, py, pz);
         }
     }
 
-    printf("N=%d, Titer=%0.3f s\n",
+    printf("N=%d, Titer=%0.3lf s\n",
         N,
         GetTimer() / nSteps / 1000.0);
 
