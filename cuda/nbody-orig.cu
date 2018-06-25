@@ -15,12 +15,13 @@ void calcForces(Particle *p, float dt, int N) {
         float Fx = 0.0f, Fy = 0.0f, Fz = 0.0f;
 
         for (int j = 0; j < N; j++) {
-            float dx = p[j].x - p[i].x;
-            float dy = p[j].y - p[i].y;
-            float dz = p[j].z - p[i].z;
-            float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
-            float invDist = rsqrtf(distSqr);
-            float invDist3 = invDist * invDist * invDist;
+            const float
+                dx = p[j].x - p[i].x,
+                dy = p[j].y - p[i].y,
+                dz = p[j].z - p[i].z,
+                distSqr = dx*dx + dy*dy + dz*dz + SOFTENING,
+                invDist = rsqrtf(distSqr),
+                invDist3 = invDist * invDist * invDist;
 
             Fx += dx * invDist3;
             Fy += dy * invDist3;
@@ -37,8 +38,10 @@ int main(const int argc, const char** argv) {
 
     const int
         N = 30000,
-        nSteps = 100,
-        nBlocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        nSteps = 1000,
+        nStepsForReport = 10,
+        nBlocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE,
+
 
     const float dt = 0.01f; // time step
 
@@ -59,16 +62,27 @@ int main(const int argc, const char** argv) {
     cudaMalloc(&d_p, n_bytes);
 
     StartTimer();
-    for (int iter = 1; iter <= nSteps; iter++) {
+    for (int iter = 0; iter < nSteps; iter++) {
 
         cudaMemcpy(d_p, particles, n_bytes, cudaMemcpyHostToDevice);
         calcForces <<<nBlocks, BLOCK_SIZE>>>(d_p, dt, N);
         cudaMemcpy(particles, d_p, n_bytes, cudaMemcpyDeviceToHost);
 
-        for (int i = 0 ; i < N; i++) { // integrate position
+        for (int i = 0 ; i < N; i++) {
             particles[i].x += particles[i].vx*dt;
             particles[i].y += particles[i].vy*dt;
             particles[i].z += particles[i].vz*dt;
+        }
+
+        if (iter % nStepsForReport == 0) {
+            float px = 0f, py = 0f, pz = 0f;
+            for (int i = 0 ; i < N; i++) {
+                Particle *p = particles + i;
+                px += p->vx;
+                py += p->vy;
+                pz += p->vz;
+            }
+            printf("p %f %f %f\n", px, py, pz);
         }
     }
 
