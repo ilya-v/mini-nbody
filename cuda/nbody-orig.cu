@@ -9,12 +9,12 @@
 typedef struct { float x, y, z, vx, vy, vz; } Particle;
 
 __global__
-void calcForces(Particle *p, float dt, int n) {
+void calcForces(Particle *p, float dt, int N) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
-    if (i < n) {
+    if (i < N) {
         float Fx = 0.0f, Fy = 0.0f, Fz = 0.0f;
 
-        for (int j = 0; j < n; j++) {
+        for (int j = 0; j < N; j++) {
             float dx = p[j].x - p[i].x;
             float dy = p[j].y - p[i].y;
             float dz = p[j].z - p[i].z;
@@ -70,7 +70,7 @@ int main(const int argc, const char** argv) {
             particles[i].y += particles[i].vy*dt;
             particles[i].z += particles[i].vz*dt;
         }
-  }
+    }
 
     printf("N=%d, Titer=%0.3f s\n",
         N,
