@@ -40,8 +40,7 @@ int main(const int argc, const char** argv) {
         N = 30000,
         nSteps = 1000,
         nStepsForReport = 10,
-        nBlocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE,
-
+        nBlocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     const float dt = 0.01f; // time step
 
