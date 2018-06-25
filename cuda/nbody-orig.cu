@@ -32,26 +32,33 @@ void calcForces(Particle *p, float dt, int N) {
         p[i].vy += dt*Fy;
         p[i].vz += dt*Fz;
     }
+    __syncthreads();
 }
 
 int main(const int argc, const char** argv) {
 
     const int
-        N = 30000,
+        Ns =  50,
+        N  = Ns * Ns * Ns,
         nSteps = 1000,
         nStepsForReport = 10,
         nBlocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-    const float dt = 0.01f; // time step
+    const float
+        dt = 0.01f,
+        init_dist = 1.0;
 
     size_t n_bytes = N*sizeof(Particle);
     Particle *particles = (Particle*)malloc(n_bytes);
 
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < Ns; i++)
+    for (int j = 0; j < Ns; j++)
+    for (int k = 0; k < Ns; k++)  {
+        const float init_shift = init_dist * (Ns - 1) / 2;
         Particle *p = particles + i;
-        p->x = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-        p->y = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-        p->z = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
+        p->x = i * init_dist - init_shift;
+        p->y = j * init_dist - init_shift;
+        p->z = k * init_dist - init_shift;
         p->vx = 0;
         p->vy = 0;
         p->vz = 0;
