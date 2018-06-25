@@ -4,7 +4,7 @@
 #include "timer.h"
 
 #define BLOCK_SIZE 256
-#define SOFTENING 1e-9f
+#define SOFTENING 1e-3f
 
 typedef struct { float x, y, z, vx, vy, vz; } Particle;
 
@@ -45,7 +45,7 @@ int main(const int argc, const char** argv) {
         nBlocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     const float
-        dt = 0.01f,
+        dt = 0.001f,
         init_dist = 1.0;
 
     size_t n_bytes = N*sizeof(Particle);
