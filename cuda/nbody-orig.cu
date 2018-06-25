@@ -41,7 +41,7 @@ int main(const int argc, const char** argv) {
   if (argc > 1) nBodies = atoi(argv[1]);
   
   const float dt = 0.01f; // time step
-  const int nIters = 10;  // simulation iterations
+  const int nIters = 100;  // simulation iterations
 
   int bytes = nBodies*sizeof(Body);
   float *buf = (float*)malloc(bytes);
@@ -54,10 +54,9 @@ int main(const int argc, const char** argv) {
   Body *d_p = (Body*)d_buf;
 
   int nBlocks = (nBodies + BLOCK_SIZE - 1) / BLOCK_SIZE;
-  double totalTime = 0.0; 
 
+  StartTimer();
   for (int iter = 1; iter <= nIters; iter++) {
-    StartTimer();
 
     cudaMemcpy(d_buf, buf, bytes, cudaMemcpyHostToDevice);
     bodyForce<<<nBlocks, BLOCK_SIZE>>>(d_p, dt, nBodies); // compute interbody forces
@@ -69,23 +68,10 @@ int main(const int argc, const char** argv) {
       p[i].z += p[i].vz*dt;
     }
 
-    const double tElapsed = GetTimer() / 1000.0;
-    if (iter > 1) { // First iter is warm up
-      totalTime += tElapsed; 
-    }
-#ifndef SHMOO
-    printf("Iteration %d: %.3f seconds\n", iter, tElapsed);
-#endif
   }
-  double avgTime = totalTime / (double)(nIters-1); 
+  double avgTime = GetTimer() / (double)(nIters-1) / 1000.0; 
 
-#ifdef SHMOO
-  printf("%d, %0.3f\n", nBodies, 1e-9 * nBodies * nBodies / avgTime);
-#else
-  printf("Average rate for iterations 2 through %d: %.3f +- %.3f steps per second.\n",
-         nIters, rate);
-  printf("%d Bodies: average %0.3f Billion Interactions / second\n", nBodies, 1e-9 * nBodies * nBodies / avgTime);
-#endif
+  printf("N=%d, Titer=%0.3f s\n", nBodies, avgTime);
   free(buf);
   cudaFree(d_buf);
 }
